@@ -1,0 +1,1 @@
+rails generate model Transfer transfer_id:integer pniya_id:integer year:integer section_id:string section_name:string field_id:string field_name:string program_id:string program_name:string request_desc:string net:decimal 

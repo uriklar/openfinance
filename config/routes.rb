@@ -1,4 +1,7 @@
 Openfinance::Application.routes.draw do
+  get "transfer/index"
+  get "welcome/index"
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
@@ -56,5 +59,8 @@ Openfinance::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
 
-  root :to => 'welcome#index'
+  root :to => 'transfer#index'
+  match "welcome" => "welcome#index"
+  match "flare" => "transfer#index"
+
 end

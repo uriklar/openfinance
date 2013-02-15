@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  transfer_id: 1
+  pniya_id: 1
+  year: 1
+  section_id: MyString
+  section_name: MyString
+  field_id: MyString
+  field_name: MyString
+  program_id: MyString
+  program_name: MyString
+  request_desc: MyString
+  net: 9.99
+
+two:
+  transfer_id: 1
+  pniya_id: 1
+  year: 1
+  section_id: MyString
+  section_name: MyString
+  field_id: MyString
+  field_name: MyString
+  program_id: MyString
+  program_name: MyString
+  request_desc: MyString
+  net: 9.99
