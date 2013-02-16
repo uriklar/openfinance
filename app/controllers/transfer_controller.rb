@@ -1,10 +1,12 @@
 class TransferController < ApplicationController
 	def index
-		#@transfers = Transfer.select("transfer_id,section_id,sum(net) as net").group("transfer_id,section_id").having("sum(net) <> ?",0).order("transfer_id ASC")
+		#variable contains the query from transfers DB
 		@transfers = Transfer.select("section_id,section_name,sum(net) as net").group("section_id,section_name").order("section_id ASC")
 		
+		#array to contain the bubble graph
 		a = []
 
+		#fill the 'a' array with hashes(h) - each hash contains one section(bubble)
 		@transfers.each do |section| 
 			h = Hash.new()
 			h["name"] = section.section_id
@@ -12,10 +14,12 @@ class TransferController < ApplicationController
 			a.push(h)
 		end
 
+		#creates json structure
 		sectionhash = Hash.new()
 		sectionhash["name"] = "stringush"
 		sectionhash["children"] = a
-		@jsonex = sectionhash.to_json
 
+		#creates json
+		@jsontransfer = sectionhash.to_json
 	end
 end

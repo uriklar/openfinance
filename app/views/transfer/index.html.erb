@@ -2,7 +2,7 @@
 <div id="viz"></div>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript">
-alert("bb");
+
 var diameter = 960,
 format = d3.format(",d"),
 color = d3.scale.category20c();
@@ -15,29 +15,13 @@ var svg = d3.select("body").append("svg")
 .attr("height", diameter)
 .attr("class", "bubble");
 
-var json_ex = {
-"name": "flare",
-"children": [{
-"name": "AgglomerativeCluster",
-"size": 3938
-},
-{
-"name": "CommunityStructure",
-"size": 3812
-},
-{
-"name": "HierarchicalCluster",
-"size": 6714
-},
-{
-"name": "MergeEdge",
-"size": 743
-}
-]
-};
+//create var to be sent to javascript function
+var vartransfer = <%= @jsontransfer.to_s.html_safe %>
 
-var test = <%= @jsonex.to_s.html_safe %>
-x(null,test);
+//call javascript function x 
+x(null,vartransfer);
+
+//x is ajavascript function that creats the bubble graph
 function x(error, root) {
 var node = svg.selectAll(".node")
 .data(bubble.nodes(classes(root))
@@ -67,8 +51,3 @@ return {children: classes};
 }
 d3.select(self.frameElement).style("height", diameter + "px");
 </script>
-
-<%= @jsonex %>
-<br/>
-
-
