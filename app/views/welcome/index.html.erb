@@ -1,34 +1,14 @@
-  <table id="ver-minimalist">
+<table>
   <tr>
-    <th>transfer_id</th>
-    <th>pniya_id</th>
-    <th>year</th>
     <th>section_id</th>
-    <th>section_name</th>
-    <th>field_id</th>
-    <th>field_name</th>
-    <th>field_id</th>
-    <th>program_id</th>
-    <th>program_name</th>
-    <th>request_desc</th>
     <th>net</th>
   </tr>
 
   <% @transfers.each do |transfer| %>
     <tr>
-      <td><%= transfer.transfer_id %></th>
-      <td><%= transfer.pniya_id %></th>
-      <td><%= transfer.year %></th>
-      <td><%= transfer.section_id %></th>
-      <td><%= transfer.section_name %></th>
-      <td><%= transfer.field_id %></th>
-      <td><%= transfer.field_name %></th>
-      <td><%= transfer.field_id %></th>
-      <td><%= transfer.program_id %></th>
-      <td><%= transfer.program_name %></th>
-      <td><%= transfer.request_desc %></th>
-      <td><%= transfer.net %></th>
+      <td><%= transfer.section_id %></td>
+      <td><%= transfer.net %></td>
     </tr>
-  <% end %>
-  </table>
+<% end %>
+</table>
 
