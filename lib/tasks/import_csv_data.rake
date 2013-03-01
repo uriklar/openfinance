@@ -4,7 +4,7 @@ require 'csv'
   task :load_csv_data  => :environment do
    
     Transfer.delete_all
-    CSV.foreach("transfers.csv") do |row|
+    CSV.foreach("transfers_hebrew.csv") do |row|
       Transfer.create(
       :transfer_id => row[0],
       :pniya_id => row[1],

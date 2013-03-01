@@ -57,7 +57,7 @@
       this.nodes = [];
       this.force = null;
       this.circles = null;
-      this.fill_color = d3.scale.ordinal().domain(["low", "medium", "high"]).range(["#d84b2a", "#beccae", "#7aa25c"]);
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium_low","medium_high","high","very_high"]).range(["#d84b2a","#E45673","#E48D9E","#9AE39C", "#4FE154", "#7aa25c"]);
       max_amount = d3.max(this.data, function(d) {
         return parseInt(d.total_amount);
       });
@@ -109,7 +109,8 @@
       }).on("mouseout", function(d, i) {
         return that.hide_details(d, i, this);
       }).on("click", function (d) {
-        window.location = "/section/" + d.section_id;
+        debugger;
+        window.location = document.URL + <%=@path.to_s%> + d.section_id;
       });
       return this.circles.transition().duration(2000).attr("r", function(d) {
         return d.radius;
@@ -117,7 +118,7 @@
     };
 
     BubbleChart.prototype.charge = function(d) {
-      return -Math.pow(d.radius, 2.0) / 7;
+      return -Math.pow(d.radius, 2.0) / 8;
     };
 
     BubbleChart.prototype.start = function() {

@@ -1,0 +1,45 @@
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+ <script type="text/javascript" charset="utf-8">
+$(function () {
+    var chart;
+    $(document).ready(function() {
+        chart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'container',
+                type: 'column'
+            },
+            title: {
+                text: "סכום העברות לפי תכנית פעולה"
+            },
+            xAxis: {
+                categories:  <%= @categories %>
+            },
+                plotOptions: {
+        series: {
+            shadow:false,
+            cursor:'pointer',
+            point: {
+                events: {
+                    click: function() {
+                        //location.href = this.options.url;
+                        window.open(this.options.url);
+                    }
+                }
+            }
+        }
+    },
+            tooltip: {
+                formatter: function() {
+                    return ''+
+                        this.series.name +': '+ this.y +'';
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            series: <%= @series %>
+        });
+    });   
+});
+ </script>

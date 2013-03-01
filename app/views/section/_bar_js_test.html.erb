@@ -1,0 +1,30 @@
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+ <script type="text/javascript" charset="utf-8">
+$(function () {
+    var chart = new Highcharts.Chart({
+        chart: {
+            renderTo: 'container',
+            type: 'column'
+        },
+        xAxis: {
+            categories: <%= @categories %>
+        },
+        
+        plotOptions: {
+            series: {
+                cursor: 'pointer',
+                point: {
+                    events: {
+                        click: function() {
+                            window.location = "/section/field/" + this.y;
+                        }
+                    }
+                }
+            }
+        },
+        
+        series: <%= @series %>
+    });
+});
+</script>
