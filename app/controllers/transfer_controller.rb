@@ -4,9 +4,9 @@ class TransferController < ApplicationController
 		require 'open-uri'
 		require 'json'
 		#variable that contains the query from transfers table
-		@transfers = Transfer.select("section_id,section_name,sum(net) as net").group("section_id,section_name").order("section_id ASC")
+		@transfers = Transfer.select("section_id,section_name,sum(net) as net").where("year = ?",session[:year]).group("section_id,section_name").order("section_id ASC")
 		#variable that contains information from 'open budget'
-		@obudget = JSON.parse(open("http://budget.yeda.us/00?year=2011&depth=1").read)
+		@obudget = JSON.parse(open("http://budget.yeda.us/00?year="+session[:year]+"&depth=1").read)
 		@breadcrumbs = {:section_id => nil}  
 
 		#the array to hold final bubble data
@@ -54,6 +54,7 @@ class TransferController < ApplicationController
 
 	def filter
 		logger.info(params[:q])
+		session[:year] = params[:q]
 		redirect_to :root
 	end
 end

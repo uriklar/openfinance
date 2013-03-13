@@ -4,7 +4,7 @@ a, a:visited, a:active {
 
 #vis {
   width: 940px;
-  height: 600px;
+  height: 500px;
   clear: both;
   margin-bottom: 10px;
 }
@@ -85,6 +85,10 @@ footer {
   text-decoration: underline;
   font-weight: lighter;
   font-size: 11px;
+}
+
+#transfer_table {
+  display: block;
 };
 
 

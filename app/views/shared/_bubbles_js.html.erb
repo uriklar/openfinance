@@ -31,7 +31,7 @@
       var max_amount;
       this.data = data;
       this.width = 940;
-      this.height = 500;
+      this.height = 400;
       this.tooltip = CustomTooltip("gates_tooltip", 240);
       this.center = {
         x: this.width / 2,
@@ -129,8 +129,26 @@
       }).attr("id", function(d) {
         return "bubble_" + d.id;
       }).on("mouseover", function(d, i) {
-        return that.show_details(d, i, this);
+        //show tooltip
+        that.show_details(d, i, this);
+        //add table on mouseover when in field level
+        debugger;
+        <% unless @breadcrumbs[:field_id].nil? %>
+        $table =  $('#transfer_table');
+        $table.find("tbody").empty();
+          var path =  document.URL + '/get_transfers';
+         $.get(path,{ section_id: <%= @breadcrumbs[:section_id] %>, field_id: <%= @breadcrumbs[:field_id] %> , program_id: d.section_id })
+          .done(function(data) {
+            $(data).each(function(idx, obj){
+              var row = "<tr><td>" + obj.pniya_id + "</td><td>" + obj.request_desc + "</td><td>" + obj.net +"</td></tr>";
+              $table.append(row);
+            });
+          })
+          .fail(function() { alert("error"); });
+          $table.show();
+        <% end %>
       }).on("mouseout", function(d, i) {
+        $table.hide();
         return that.hide_details(d, i, this);
       }).on("click", function (d) {
         window.location = document.URL + <%=@path.to_s%> + d.section_id;
@@ -217,14 +235,13 @@
     };
 
     BubbleChart.prototype.show_details = function(data, i, element) {
-      debugger;
       var content;
       d3.select(element).attr("stroke", "black");
       content = "<span class=\"title\"> " + data.name + "</span><br/>";
       content += "<span class=\"budget_title\"> תקציב מקורי</span>";
       content += "<span class=\"percent_title\"> אחוז שינוי </span><br/>";
       content += "<span class=\"budget\">" + ValueDesignTooltip(data.value) + "</span>";
-      content += "<span class=\"percent\">" + data.percent + "%</span>";
+      content += "<span class=\"percent\">" + data.percent + "%</span><br/>";
 
       //check sign of percent:
       return this.tooltip.showTooltip(content, d3.event, data.percent > 0 );

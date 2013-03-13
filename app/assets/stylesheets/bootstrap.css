@@ -1976,19 +1976,20 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
   text-align: right;
+  direction: rtl;
 }
 
 .table {
-  width: 100%;
+  width: 40%;
   margin-bottom: 20px;
-  text-align: right;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .table th,
 .table td {
   padding: 8px;
   line-height: 20px;
-  text-align: right;
   vertical-align: top;
   border-top: 1px solid #dddddd;
 }

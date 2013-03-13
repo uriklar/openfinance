@@ -70,5 +70,6 @@ end
   match "/filter" => 'transfer#filter', :as => ''
   match "/section/:id" => 'section#show' ,:as => :section
   match "/section/:id/field/:id" => 'field#show', :as => :field
+  match "/section/:id/field/:id/get_transfers" => 'field#get_transfers'
   match "/section/:id/field/:id/program:id" => 'program#show', :as => :program
 end

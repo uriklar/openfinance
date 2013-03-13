@@ -58,23 +58,19 @@ class FieldController < ApplicationController
 		end
 		@json = field_array.to_json.html_safe 
 		@path = "/program/"
+		@transfers = []
 	end	
 
-	def show_bar
-		#program names for x axis
-		categories_temp = []
-		a = []
-		#values for y axis
-		data = []
-		field = Field.select("field_name,program_id,program_name,sum(net) as net").where("field_id = ?", params[:id]).group("program_id,program_name").order("program_id ASC")
-		field.each do |program|
-			categories_temp.push(program.program_name)
-			data.push(program.net.to_f)
-			@title = program.field_name
+	def get_transfers
+		transfers = Field.select("section_name,field_name,program_name,pniya_id,request_desc,net").where("section_id = ? AND field_id = ? AND program_id = ?", params[:section_id],params[:id],params[:program_id]).order("pniya_id")
+		logger.info(params)
+		logger.info(transfers.size)
+		@json = transfers.to_json
+		transfers.each do |t|
+		logger.info(t.program_name)
 		end
-		@categories = categories_temp.to_json.html_safe
-		h = {:name => "sum", :data => data}
-		a.push(h)
-		@series = a.to_json.html_safe
-	end
+		respond_to do |format|
+   			 format.json { render json: @json }
+		end
+	end		
 end
