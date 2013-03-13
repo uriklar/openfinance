@@ -1975,18 +1975,20 @@ table {
   background-color: transparent;
   border-collapse: collapse;
   border-spacing: 0;
+  text-align: right;
 }
 
 .table {
   width: 100%;
   margin-bottom: 20px;
+  text-align: right;
 }
 
 .table th,
 .table td {
   padding: 8px;
   line-height: 20px;
-  text-align: left;
+  text-align: right;
   vertical-align: top;
   border-top: 1px solid #dddddd;
 }
@@ -2124,7 +2126,7 @@ table th[class*="span"],
 .row-fluid table th[class*="span"] {
   display: table-cell;
   float: none;
-  margin-left: 0;
+  /*margin-left: 0;*/
 }
 
 .table td.span1,
@@ -4868,6 +4870,7 @@ input[type="submit"].btn.btn-mini {
   -webkit-border-radius: 4px;
      -moz-border-radius: 4px;
           border-radius: 4px;
+  direction: rtl;
 }
 
 .breadcrumb > li {

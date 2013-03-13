@@ -31,7 +31,7 @@
       var max_amount;
       this.data = data;
       this.width = 940;
-      this.height = 500;
+      this.height = 700;
       this.tooltip = CustomTooltip("gates_tooltip", 240);
       this.center = {
         x: this.width / 2,
@@ -39,40 +39,28 @@
       };
       this.year_centers = {
         "very_low": {
-          from: 1,
-          to: 1,
-          from_x: 380,
-          to_x: 420
+          x: this.width,
+          y: 3 * this.height / 6
         },
         "low": {
-          from: 0.86,
-          to: 0.95,
-          from_x: 200,
-          to_x: 600
+          x: this.width / 2,
+          y: 2.8* this.height / 6
         },
         "medium_low": {
-          from: 0.5,
-          to: 0.84,
-          from_x: 0,
-          to_x: 800
+          x: this.width/2,
+          y: 2.4* this.height / 6
         },
         "medium_high": {
-          from: 0.16,
-          to: 0.47,
-          from_x: 0,
-          to_x: 800
+          x: this.width/2,
+          y: 1.8* this.height / 6
         },
         "high": {
-          from: 0.06,
-          to: 0.14,
-          from_x: 200,
-          to_x: 600
+          x: this.width/2,
+          y:  1.1 *this.height / 4
         },
         "very_high": {
-          from: 0,
-          to: 0,
-          from_x: 380,
-          to_x: 420
+          x: this.width / 2,
+          y: this.height / 4
         }
       };
       this.layout_gravity = -0.01;
@@ -81,7 +69,7 @@
       this.nodes = [];
       this.force = null;
       this.circles = null;
-      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium_low","medium_high","high","very_high"]).range(["#d84b2a","#EB6262","#F9CCCC","#C9F1B0", "#83C55A", "#7aa25c"]);
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium_low","medium_high","high","very_high"]).range(["#d84b2a","#E45673","#E48D9E","#9AE39C", "#4FE154", "#7aa25c"]);
       max_amount = d3.max(this.data, function(d) {
         return parseInt(d.total_amount);
       });
@@ -104,8 +92,8 @@
           year: d.start_year,
           section_id: d.section_id,
           percent: d.percent,
-          x: (Math.random()*(_this.year_centers[d.group].to_x-_this.year_centers[d.group].from_x)+_this.year_centers[d.group].from_x),
-          y: (Math.random()*(_this.year_centers[d.group].to-_this.year_centers[d.group].from)+_this.year_centers[d.group].from) * 800
+          x: Math.random() * 900,
+          y: Math.random() * 800
         };
         return _this.nodes.push(node);
       });
@@ -133,6 +121,7 @@
       }).on("mouseout", function(d, i) {
         return that.hide_details(d, i, this);
       }).on("click", function (d) {
+        debugger;
         window.location = document.URL + <%=@path.to_s%> + d.section_id;
       });
       return this.circles.transition().duration(2000).attr("r", function(d) {
@@ -141,7 +130,7 @@
     };
 
     BubbleChart.prototype.charge = function(d) {
-      return -Math.pow(d.radius, 2.0) / 8;
+      return -Math.pow(d.radius, 2.0) / 9;
     };
 
     BubbleChart.prototype.start = function() {
@@ -164,15 +153,14 @@
     BubbleChart.prototype.move_towards_center = function(alpha) {
       var _this = this;
       return function(d) {
-        var target;
-        target = _this.year_centers[d.group];
         d.x = d.x + (_this.center.x - d.x) * (_this.damper + 0.02) * alpha;
-        return d.y = d.y + (_this.center.y  - d.y) * (_this.damper + 0.02) * alpha;
+        return d.y = d.y + (_this.center.y - d.y) * (_this.damper + 0.02) * alpha;
       };
     };
 
     BubbleChart.prototype.display_by_year = function() {
       var _this = this;
+      debugger;
       this.force.gravity(this.layout_gravity).charge(this.charge).friction(0.9).on("tick", function(e) {
         return _this.circles.each(_this.move_towards_year(e.alpha)).attr("cx", function(d) {
           return d.x;
@@ -220,13 +208,9 @@
       var content;
       d3.select(element).attr("stroke", "black");
       content = "<span class=\"title\"> " + data.name + "</span><br/>";
-      content += "<span class=\"budget_title\"> תקציב מקורי</span>";
-      content += "<span class=\"percent_title\"> אחוז שינוי </span><br/>";
-      content += "<span class=\"budget\">" + ValueDesignTooltip(data.value) + "</span>";
-      content += "<span class=\"percent\">" + data.percent + "%</span>";
-
-      //check sign of percent:
-      return this.tooltip.showTooltip(content, d3.event, data.percent > 0 );
+      content += "<span class=\"budget\">" + data.value + "₪</span>";
+      content += "<span class=\"percent\">" + data.percent + "</span>";
+      return this.tooltip.showTooltip(content, d3.event);
     };
 
     BubbleChart.prototype.hide_details = function(data, i, element) {
@@ -247,6 +231,7 @@
     var chart, data_ex, render_vis,
       _this = this;
     chart = null;
+    debugger;
     render_vis = function(csv) {
       chart = new BubbleChart(csv);
       chart.start();
@@ -258,11 +243,13 @@
     root.display_year = function() {
       return chart.display_by_year();
     };
-    root.toggle_view = function(view_type) {
+    root.toggle_view = function() {
+      debugger;
       return root.display_year();
     };
 data_ex = <%= @json %>;
-    return render_vis(data_ex);
+    render_vis(data_ex);
+    return toggle_view();
   });
 
 }).call(this);
@@ -277,18 +264,13 @@ function CustomTooltip(tooltipId, width) {
 
     hideTooltip();
 
-    function showTooltip(content, event, positive) {
-      var $tooltip = $("#" + tooltipId);
-      $tooltip.html(content);
-      var $percent = $tooltip.find(".percent");
-      console.log($percent.css("color"));
-      if(positive)
-        $percent.css("color","green");
-      else
-        $percent.css("color","red");
-      $tooltip.show();
+    function showTooltip(content, event) {
+        $("#" + tooltipId).html(content);
+        $("#" + tooltipId).show();
+
         updatePosition(event);
     }
+
     function hideTooltip() {
         $("#" + tooltipId).hide();
     }
@@ -321,25 +303,4 @@ function CustomTooltip(tooltipId, width) {
         updatePosition: updatePosition
     }
 }
-
-function precise_round(num,decimals){
-  var x = (Math.round(num*Math.pow(10,decimals))/Math.pow(10,decimals));
-  return x;
-}
-
-function ValueDesignTooltip(Value) {
-  var newValue;
-  if (Value < 1000000) {
-    newValue = precise_round(Value/1000,2) + "₪ אלף";
-  }
-  else if (Value < 1000000000) {
-    newValue = precise_round(Value/1000000,2) + "₪ מליון";
-  }
-  else {
-    newValue = precise_round(Value/1000000000,2) + "₪ מליארד";
-  }
-
-  return newValue
-}
-
 </script>

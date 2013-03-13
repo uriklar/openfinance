@@ -4,9 +4,14 @@ class SectionController < ApplicationController
 		require 'open-uri'
 		require 'json'
 		#variable that contains the query from transfers table
-		@fields = Section.select("section_name,field_id,field_name,sum(net) as net").where("section_id = ?", params[:id]).group("field_id,field_name,section_name").order("field_id ASC")
+		@fields = Section.select("section_name,section_id,field_id,field_name,sum(net) as net").where("section_id = ?", params[:id]).group("field_id,field_name,section_name").order("field_id ASC")
 		#variable that contains information from 'open budget'
 		@obudget = JSON.parse(open("http://budget.yeda.us/00" + params[:id] +"?year=2011&depth=1").read)
+		#html tag for breadcrums
+		@breadcrumbs = {:section_id => params[:id],
+					  :section_name => @fields[0].section_name,
+					  :field_id => nil,
+					 }  
 		#the array to hold final bubble data
 		field_array = []
 		#groups hash defines devision to colour groups
@@ -35,8 +40,8 @@ class SectionController < ApplicationController
 						#budget size * 1000 since it is saved as /1000 in open budget
 						bubble = {:id => index_field, :total_amount => budget*1000, :section_id => field.field_id,
 						          :group => group[:name],
-						          :value => number_with_delimiter(budget*1000, :delimiter => ','),
-						          :percent => (percent.round(3)*100).to_s + "%",
+						          :value => budget*1000,
+						          :percent => percent.round(3)*100,
 						          :p_f => group[:p_from], :p_t => group[:p_to],
 						          :section_name => field.field_name,
 						          :start_year => 2009

@@ -1,0 +1,19 @@
+<table class="table table-striped" dir="rtl">
+  <caption>טבלת כלל ההעברות בתכנית פעולה זו</caption>
+   <thead>
+    <tr>
+      <th>מספר פנייה</th>
+      <th>תיאור הבקשה</th>
+      <th>סכום נטו</th>
+    </tr>
+   </thead>
+   <tbody>
+   	<% @transfers.each do |transfer| %>
+    <tr>
+      <td><%= transfer.pniya_id %></td>
+      <td><%= transfer.request_desc %></td>
+      <td><%= transfer.net %></td>
+    </tr>
+    <% end %>
+   </tbody>
+</table>

@@ -7,15 +7,17 @@ class TransferController < ApplicationController
 		@transfers = Transfer.select("section_id,section_name,sum(net) as net").group("section_id,section_name").order("section_id ASC")
 		#variable that contains information from 'open budget'
 		@obudget = JSON.parse(open("http://budget.yeda.us/00?year=2011&depth=1").read)
+		@breadcrumbs = {:section_id => nil}  
+
 		#the array to hold final bubble data
 		section_array = []
 		#groups hash defines devision to colour groups
-		groups = [	{:name => "very_high", :upper => 10000, :lower => 0.15, :p_from => 0.833333333, :p_to => 1},
-					{:name => "high", :upper => 0.15, :lower => 0.05, :p_from => 0.666666667, :p_to => 0.833333333},
-					{:name => "medium_high", :upper => 0.05, :lower => 0, :p_from => 0.5, :p_to => 0.666666667},
-					{:name => "medium_low", :upper => 0, :lower => -0.05, :p_from => 0.333333333, :p_to => 0.5 },   	
-				   	{:name => "low", :upper => -0.05, :lower => -0.15, :p_from => 0.166666667 , :p_to => 0.333333333},
-				   	{:name => "very_low", :upper => -0.15, :lower => -1000, :p_from => 0, :p_to => 0.166666667}
+		groups = [	{:name => "very_high", :upper => 10000, :lower => 0.15, :y_from => 750, :y_to => 800 , :x_from => 250 , :x_to => 650},
+					{:name => "high", :upper => 0.15, :lower => 0.05, :y_from => 650, :y_to => 750 , :x_from => 150, :x_to => 750},
+					{:name => "medium_high", :upper => 0.05, :lower => 0, :y_from => 400, :y_to => 650 , :x_from => 0, :x_to =>900},
+					{:name => "medium_low", :upper => 0, :lower => -0.05, :y_from => 150, :y_to => 400 , :x_from => 0, :x_to => 900 },   	
+				   	{:name => "low", :upper => -0.05, :lower => -0.15, :y_from => 50, :y_to => 150 , :x_from => 150, :x_to => 750},
+				   	{:name => "very_low", :upper => -0.15, :lower => -1000, :y_from => 0, :y_to => 50 , :x_from => 250 , :x_to => 650}
 				 ]
 		@transfers.each_with_index do |section,index_section|
 			#section_string = creating the section string for lookup in "Open Budget"
@@ -33,8 +35,8 @@ class TransferController < ApplicationController
 						#budget size * 1000 since it is saved as /1000 in open budget
 						bubble = {:id => index_section, :total_amount => budget*1000, :section_id => section.section_id,
 						          :group => group[:name],
-						          :value => number_with_delimiter(budget*1000, :delimiter => ','),
-						          :percent => (percent.round(3)*100).to_s + "%",
+						          :value => budget*1000,
+						          :percent => percent.round(3)*100,
 						          :p_f => group[:p_from], :p_t => group[:p_to],
 						          :section_name => section.section_name,
 						          :start_year => 2009
@@ -48,6 +50,11 @@ class TransferController < ApplicationController
 		end
 		@json = section_array.to_json.html_safe 
 		@path = "/section/"
+	end
+
+	def filter
+		logger.info(params[:q])
+		redirect_to :root
 	end
 end
 

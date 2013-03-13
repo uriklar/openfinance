@@ -4,9 +4,17 @@ class FieldController < ApplicationController
 		require 'open-uri'
 		require 'json'
 		#variable that contains the query from transfers table
-		@fields =  Field.select("field_name,program_id,program_name,sum(net) as net").where("section_id = ? AND field_id = ?", params[:section_id],params[:id]).group("field_name,field_id,program_id,program_name").order("program_id ASC")
+		@fields =  Field.select("section_name,field_name,program_id,program_name,sum(net) as net").where("section_id = ? AND field_id = ?", params[:section_id],params[:id]).group("field_name,field_id,program_id,program_name").order("program_id ASC")
 		#variable that contains information from 'open budget'
 		@obudget = JSON.parse(open("http://budget.yeda.us/00" + params[:section_id] + params[:id] + "?year=2011&depth=1").read)
+		
+		@breadcrumbs = {:section_id => params[:section_id],
+			  :section_name => @fields[0].section_name,
+			  :field_id => params[:id],
+			  :field_name => @fields[0].field_name,
+			  :program_id => nil
+			 } 
+
 		#the array to hold final bubble data
 		field_array = []
 		#groups hash defines devision to colour groups
@@ -35,8 +43,8 @@ class FieldController < ApplicationController
 						#budget size * 1000 since it is saved as /1000 in open budget
 						bubble = {:id => index_field, :total_amount => budget*1000, :section_id => field.program_id,
 						          :group => group[:name],
-						          :value => number_with_delimiter(budget*1000, :delimiter => ','),
-						          :percent => (percent.round(3)*100).to_s + "%",
+						          :value => budget*1000,
+						          :percent => percent.round(3)*100,
 						          :p_f => group[:p_from], :p_t => group[:p_to],
 						          :section_name => field.program_name,
 						          :start_year => 2009
@@ -49,7 +57,7 @@ class FieldController < ApplicationController
 			end
 		end
 		@json = field_array.to_json.html_safe 
-		@path = "/field/"
+		@path = "/program/"
 	end	
 
 	def show_bar

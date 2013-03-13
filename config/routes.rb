@@ -60,10 +60,15 @@ Openfinance::Application.routes.draw do
   # match ':controller(/:action(/:id))(.:format)'
 
 resources :section do
-  resources :field
+  resources :field do
+    resources :program
+  end
 end
 
+
   root :to => 'transfer#index'
-  match "/section/:id" => 'section#index'
-  match "section/:id/field/:id" => 'field#index'
+  match "/filter" => 'transfer#filter', :as => ''
+  match "/section/:id" => 'section#show' ,:as => :section
+  match "/section/:id/field/:id" => 'field#show', :as => :field
+  match "/section/:id/field/:id/program:id" => 'program#show', :as => :program
 end
