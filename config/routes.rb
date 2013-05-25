@@ -61,7 +61,6 @@ Openfinance::Application.routes.draw do
 
 resources :section do
   resources :field do
-    resources :program
   end
 end
 

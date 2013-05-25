@@ -1,0 +1,38 @@
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  function drawChart() {
+
+    sections = <%= @json %>;
+    sections.sort(function(a, b){
+     return b.percent-a.percent
+    });
+
+    len = sections.length;
+    winners = sections.slice(0,5);
+    losers = sections.slice(len-5, len+1);
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month'); // Implicit domain label col.
+    data.addColumn('number', 'Sales'); // Implicit series 1 data col.
+    data.addColumn({type:'string', role:'tooltip'});
+    data.addColumn('number', 'Expenses');
+    data.addColumn({type:'string', role:'tooltip'});
+
+    for (var i = 0; i < 5; i++) {
+      data.addRows([[String(i),Math.round(winners[i].percent *100)/100,'a',Math.round(losers[4-i].percent * 100)/100,'b']]);
+    };
+
+    var options = {
+      title: 'Company Performance',
+      vAxis: {title: 'Year',  titleTextStyle: {color: 'red'}}
+    };
+
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+    google.visualization.events.addListener(chart, 'onmouseover', function(){});
+}
+</script>

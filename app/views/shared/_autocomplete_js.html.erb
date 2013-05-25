@@ -1,0 +1,13 @@
+  <script>
+  $(function() {
+    var availableNames = <%= @auto_complete %>;
+    $( "#query" ).autocomplete({
+      source: availableNames,
+
+      select: function( event, ui ) {
+        debugger;
+        alert(ui.item.id)
+      }
+    });
+  });
+  </script>

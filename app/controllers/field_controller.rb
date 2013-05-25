@@ -17,6 +17,7 @@ class FieldController < ApplicationController
 
 		#the array to hold final bubble data
 		field_array = []
+		@auto_complete = []
 		#groups hash defines devision to colour groups
 		groups = [	{:name => "very_high", :upper => 10000, :lower => 0.15, :p_from => 0.833333333, :p_to => 1},
 					{:name => "high", :upper => 0.15, :lower => 0.05, :p_from => 0.666666667, :p_to => 0.833333333},
@@ -48,7 +49,8 @@ class FieldController < ApplicationController
 						          :p_f => group[:p_from], :p_t => group[:p_to],
 						          :section_name => field.program_name,
 						          :start_year => 2009
-						   		}		 
+						   		}
+						@auto_complete.push({:label => field.program_name, :value => field.program_name, :id => index_field, :budget => bubble[:value], :percent =>bubble[:percent]})          		 
 						field_array.push(bubble)
 						flag = true
 					end
@@ -59,6 +61,7 @@ class FieldController < ApplicationController
 		@json = field_array.to_json.html_safe 
 		@path = "/program/"
 		@transfers = []
+		@auto_complete = @auto_complete.to_json.html_safe 
 	end	
 
 	def get_transfers

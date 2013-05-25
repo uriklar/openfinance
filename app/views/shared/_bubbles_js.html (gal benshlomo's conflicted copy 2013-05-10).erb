@@ -1,0 +1,447 @@
+ <script type="text/javascript">
+  (function () {
+  var BubbleChart, root,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  BubbleChart = (function() {
+
+    function BubbleChart(data) {
+      this.hide_details = __bind(this.hide_details, this);
+
+      this.show_details = __bind(this.show_details, this);
+
+      this.hide_years = __bind(this.hide_years, this);
+
+      this.move_towards_center = __bind(this.move_towards_center, this);
+
+      this.display_group_all = __bind(this.display_group_all, this);
+
+      this.start = __bind(this.start, this);
+
+      this.create_vis = __bind(this.create_vis, this);
+
+      this.create_nodes = __bind(this.create_nodes, this);
+
+      var max_amount;
+      this.data = data;
+      this.width = 600;
+      this.height = 400;
+      this.tooltip = CustomTooltip("gates_tooltip", 240);
+      this.center = {
+        x: this.width / 3.5,
+        y: this.height /2
+      };
+      this.year_centers = {
+        "very_low": {
+          from: 1,
+          to: 1,
+          from_x: 380,
+          to_x: 420
+        },
+        "low": {
+          from: 0.86,
+          to: 0.95,
+          from_x: 200,
+          to_x: 600
+        },
+        "medium": {
+          from: 0.17,
+          to: 0.82,
+          from_x: 0,
+          to_x: 800
+        },
+        "medium_high": {
+          from: 0.16,
+          to: 0.47,
+          from_x: 0,
+          to_x: 800
+        },
+        "high": {
+          from: 0.06,
+          to: 0.14,
+          from_x: 200,
+          to_x: 600
+        },
+        "very_high": {
+          from: 0,
+          to: 0,
+          from_x: 380,
+          to_x: 420
+        }
+      };
+      this.layout_gravity = -0.01;
+      this.damper = 0.1;
+      this.vis = null;
+      this.nodes = [];
+      this.force = null;
+      this.circles = null;
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium","high","very_high"]).range(["#d84b2a","#EB6262","#D8D8D8","#C9F1B0", "#7aa25c"]);
+      max_amount = d3.max(this.data, function(d) {
+        return parseInt(d.total_amount);
+      });
+      this.radius_scale = d3.scale.pow().exponent(0.5).domain([0, max_amount]).range([2, 80]);
+      this.create_nodes();
+      this.create_vis();
+    }
+
+    BubbleChart.prototype.create_nodes = function() {
+      var _this = this;
+      this.data.forEach(function(d) {
+        var node;
+        node = {
+          id: d.id,
+          radius: _this.radius_scale(parseInt(d.total_amount)),
+          value: d.value,
+          name: d.section_name,
+          org: d.organization,
+          group: d.group,
+          year: d.start_year,
+          section_id: d.section_id,
+          percent: d.percent,
+          x: (Math.random()*(_this.year_centers[d.group].to_x-_this.year_centers[d.group].from_x)+_this.year_centers[d.group].from_x),
+          y: (Math.random()*(_this.year_centers[d.group].to-_this.year_centers[d.group].from)+_this.year_centers[d.group].from) * 800
+        };
+        return _this.nodes.push(node);
+      });
+      return this.nodes.sort(function(a, b) {
+        return b.value - a.value;
+      });
+    };
+
+    BubbleChart.prototype.create_vis = function() {
+      var that,
+        _this = this;
+      this.vis = d3.select("#vis").append("svg").attr("width", this.width).attr("height", this.height).attr("id", "svg_vis");
+      this.circles = this.vis.selectAll("circle").data(this.nodes, function(d) {
+        return d.id;
+      });
+      that = this;
+      this.circles.enter().append("circle").attr("r", 0).attr("fill", function(d) {
+        return _this.fill_color(d.group);
+      }).attr("stroke-width", 2).attr("stroke", function(d) {
+        return d3.rgb(_this.fill_color(d.group)).darker();
+      }).attr("id", function(d) {
+        return "bubble_" + d.id;
+      }).on("mouseover", function(d, i) {
+        //change mouse cursor to pointer
+        document.body.style.cursor = 'pointer';
+        //show tooltip
+        that.show_details(d, i, this,"bubble");
+        //add table on mouseover when in field level
+        <% unless @breadcrumbs[:field_id].nil? %>
+        $table =  $('#transfer_table');
+        $table.find("tbody").empty();
+          var path =  document.URL + '/get_transfers';
+         $.get(path,{ section_id: <%= @breadcrumbs[:section_id] %>, field_id: <%= @breadcrumbs[:field_id] %> , program_id: d.section_id })
+          .done(function(data) {
+            $(data).each(function(idx, obj){
+              var row = "<tr><td>" + obj.pniya_id + "</td><td>" + obj.request_desc + "</td><td>" + obj.net +"</td></tr>";
+              $table.append(row);
+            });
+          })
+          .fail(function() { alert("error"); });
+          $table.show();
+        <% end %>
+      }).on("mouseout", function(d, i) {
+      if (!(typeof $table === 'undefined'))
+         $table.hide();      
+      return that.hide_details(d, i, this);
+      }).on("click", function (d) {
+        window.location = document.URL + <%=@path.to_s%> + d.section_id;
+      });
+      return this.circles.transition().duration(2000).attr("r", function(d) {
+        return d.radius;
+      });
+    };
+
+    BubbleChart.prototype.charge = function(d) {
+      return -Math.pow(d.radius, 2.0) / 8;
+    };
+
+    BubbleChart.prototype.start = function() {
+      return this.force = d3.layout.force().nodes(this.nodes).size([this.width, this.height]);
+    };
+
+    BubbleChart.prototype.display_group_all = function() {
+      var _this = this;
+      this.force.gravity(this.layout_gravity).charge(this.charge).friction(0.9).on("tick", function(e) {
+        return _this.circles.each(_this.move_towards_center(e.alpha)).attr("cx", function(d) {
+          return d.x;
+        }).attr("cy", function(d) {
+          return d.y;
+        });
+      });
+      this.force.start();
+      return this.hide_years();
+    };
+
+    BubbleChart.prototype.move_towards_center = function(alpha) {
+      var _this = this;
+      return function(d) {
+        var target;
+        target = _this.year_centers[d.group];
+        d.x = d.x + (_this.center.x - d.x) * (_this.damper + 0.02) * alpha;
+        return d.y = d.y + (_this.center.y  - d.y) * (_this.damper + 0.02) * alpha;
+      };
+    };
+
+    BubbleChart.prototype.hide_years = function() {
+      var years;
+      return years = this.vis.selectAll(".years").remove();
+    };
+
+    BubbleChart.prototype.show_details = function(data, i, element,source) {
+      var content;
+      
+      if (source == "bubble")
+        d3.select(element).attr("stroke", "black");
+      else
+      {
+        d3.select(element).attr("fill", "yellow");
+        $("#gates_tooltip").remove();
+        this.tooltip = CustomTooltip("gates_tooltip", 240);
+      }
+
+      content = "<span class=\"title\"> " + data.name + "</span><br/>";
+      content += "<span class=\"budget_title\"> תקציב מקורי</span>";
+      content += "<span class=\"percent_title\"> אחוז שינוי </span><br/>";
+      content += "<span class=\"budget\">" + ValueDesignTooltip(data.value) + "</span>";
+      content += "<span class=\"percent\">" + data.percent + "%</span><br/>";
+
+      //if source != "bubble" then there is no d3 event. we got here from bar chart.
+      if(source == "bubble")
+        return this.tooltip.showTooltip(content, d3.event, data.percent > 0 );
+      else 
+      {
+        datum = d3.select(element);
+        tx = datum.attr("cx");
+        ty = datum.attr("cy");
+        e = {pageX: tx, pageY: ty};
+        return this.tooltip.showTooltip(content, e, data.percent > 0 );
+      }
+    };
+
+    BubbleChart.prototype.hide_details = function(data, i, element) {
+      var _this = this;
+      //this.tooltip = CustomTooltip("gates_tooltip", 240);
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium","high","very_high"]).range(["#d84b2a","#EB6262","#D8D8D8","#C9F1B0", "#7aa25c"]);
+      d3.select(element).attr("stroke", function(d) {
+        return d3.rgb(_this.fill_color(d.group)).darker();
+      });
+
+      d3.select(element).attr("fill", function(d) {
+        return d3.rgb(_this.fill_color(d.group));
+      });
+      return this.tooltip.hideTooltip();
+    };
+
+    return BubbleChart;
+
+  })(); //end of BubbleChart class
+
+  root = typeof exports !== "undefined" && exports !== null ? exports : this;
+
+//start of document.ready()
+  $(function() {
+    var chart, data_ex, render_vis,
+      _this = this;
+    chart = null;
+    render_vis = function(csv) {
+      chart = new BubbleChart(csv);
+      chart.start();
+      return root.display_all();
+    };
+    root.display_all = function() {
+      return chart.display_group_all();
+    };
+    root.display_year = function() {
+      return chart.display_by_year();
+    };
+    root.toggle_view = function(view_type) {
+      return root.display_year();
+    };
+    data_ex = <%= @json %>;
+    return render_vis(data_ex);
+  });
+
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  autocomplete();
+  
+  function drawChart() {
+    sections = <%= @json %>;
+    sections.sort(function(a, b){
+     return b.percent-a.percent
+    });
+
+    len = sections.length;
+    positive_counter = 0;
+    negative_counter = 0;
+    winners=[];
+    losers=[];
+    h = {};
+    h['percent']=0;
+    h['name']="";
+
+    for(i=0; i<len && positive_counter<5; i++) {
+      if (sections[i].percent>0) {
+        winners[i]=sections[i];
+        positive_counter++;
+      }
+    }
+    for(i=len-1; i>=0 && negative_counter<5; i--) {
+      if (sections[i].percent<0) {
+        losers[len-1-i]=sections[i];
+        negative_counter++;
+      }
+    }
+
+    for(i=1; i<=Math.abs(positive_counter-negative_counter); i++) {
+      if (positive_counter>negative_counter) {
+        losers[negative_counter+i-1] = h;
+      }
+      else {
+        winers[positive_counter+i-1] = h;
+      }
+    }
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month'); // Implicit domain label col.
+    data.addColumn('number', 'תוספת'); // Implicit series 1 data col.
+    data.addColumn({type:'string', role:'tooltip'});
+    data.addColumn('number', 'קיצוץ');
+    data.addColumn({type:'string', role:'tooltip'});
+    //create bars for chart
+    bar_chart_size = Math.max(positive_counter,negative_counter)
+    debugger;
+    for (var i = 0; i < bar_chart_size; i++) {
+      data.addRows([[String(i+1),Math.round(winners[i].percent *100)/100,winners[i].section_name,Math.round(losers[i].percent * 100)/100,losers[i].section_name]]);
+    };
+
+    var options = {
+      title: 'חמשת התוספות/קיצוצים המובילים',
+      vAxis: {title: 'דירוג',  titleTextStyle: {color: 'green'}},
+      hAxis: {title: 'אחוז תוספת/קיצוץ',  titleTextStyle: {color: 'green'}}
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+    chart.options.colors=['red','green']
+    google.visualization.events.addListener(chart, 'onmouseover', function(e){
+      //user is over a blue column
+      if(e.column == 1)
+        d = winners[e.row];
+      //user is on a red column
+      else if(e.column == 3)
+        d = losers[e.row];
+
+      data = {name: d.section_name, value: d.value, percent: d.percent}
+      element = 'circle#bubble_' + d.id; 
+      BubbleChart.prototype.show_details(data,d.id,element,"barchart");
+    });
+    google.visualization.events.addListener(chart, 'onmouseout', function(e){
+      if(e.column == 1)
+        d = winners[e.row];
+      else if(e.column == 3)
+        d = losers[e.row];
+
+      element = 'circle#bubble_' + d.id; 
+      BubbleChart.prototype.hide_details(null,null,element);
+    });
+}
+
+function autocomplete() {
+    var availableNames = <%= @auto_complete %>;
+    $("#query").autocomplete({
+      source: availableNames
+    });
+
+    $("#query").on( "autocompleteselect", function( event, ui ) {
+        data = {name: ui.item.value, value: ui.item.budget, percent: ui.item.percent}
+        element = 'circle#bubble_' + ui.item.id; 
+        BubbleChart.prototype.show_details(data,ui.item.id,element,"barchart");
+        setTimeout(function(){
+          BubbleChart.prototype.hide_details(data,ui.item.id,element,"barchart");
+          x = $("#query").get(0);
+          x.value = "";
+        },1000);        
+    });
+}
+
+}).call(this); //end of BubbleChart creation 
+
+function CustomTooltip(tooltipId, width,source) {
+    var tooltipId = tooltipId;
+    $("body").append("<div class='tooltip' id='" + tooltipId + "'></div>");
+
+    if (width) {
+        $("#" + tooltipId).css("width", width);
+    }
+
+    hideTooltip();
+
+    function showTooltip(content, event, positive) {
+      var $tooltip = $("#" + tooltipId);
+      $tooltip.html(content);
+      var $percent = $tooltip.find(".percent");
+      console.log($percent.css("color"));
+      if(positive)
+        $percent.css("color","green");
+      else
+        $percent.css("color","red");
+      $tooltip.show();
+        updatePosition(event);
+    }
+    function hideTooltip() {
+        $("#" + tooltipId).hide();
+    }
+
+    function updatePosition(event) {
+        var ttid = "#" + tooltipId;
+        var xOffset = 20;
+        var yOffset = 10;
+
+        var ttw = $(ttid).width();
+        var tth = $(ttid).height();
+        var wscrY = $(window).scrollTop();
+        var wscrX = $(window).scrollLeft();
+        var curX = (document.all) ? event.clientX + wscrX : event.pageX;
+        var curY = (document.all) ? event.clientY + wscrY : event.pageY;
+        var ttleft = ((curX - wscrX + xOffset * 2 + ttw) > $(window).width()) ? curX - ttw - xOffset * 2 : curX + xOffset;
+        if (ttleft < wscrX + xOffset) {
+            ttleft = wscrX + xOffset;
+        }
+        var tttop = ((curY - wscrY + yOffset * 2 + tth) > $(window).height()) ? curY - tth - yOffset * 2 : curY + yOffset;
+        if (tttop < wscrY + yOffset) {
+            tttop = curY + yOffset;
+        }
+        $(ttid).css('top', tttop + 'px').css('left', ttleft + 'px');
+    }
+
+    return {
+        showTooltip: showTooltip,
+        hideTooltip: hideTooltip,
+        updatePosition: updatePosition
+    }
+}
+
+function precise_round(num,decimals){
+  var x = (Math.round(num*Math.pow(10,decimals))/Math.pow(10,decimals));
+  return x;
+}
+
+function ValueDesignTooltip(Value) {
+  var newValue;
+  if (Value < 1000000) {
+    newValue = precise_round(Value/1000,2) + "₪ אלף";
+  }
+  else if (Value < 1000000000) {
+    newValue = precise_round(Value/1000000,2) + "₪ מליון";
+  }
+  else {
+    newValue = precise_round(Value/1000000000,2) + "₪ מליארד";
+  }
+
+  return newValue
+}
+</script>

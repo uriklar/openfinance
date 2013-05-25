@@ -12,12 +12,6 @@
 
       this.hide_years = __bind(this.hide_years, this);
 
-      this.display_years = __bind(this.display_years, this);
-
-      this.move_towards_year = __bind(this.move_towards_year, this);
-
-      this.display_by_year = __bind(this.display_by_year, this);
-
       this.move_towards_center = __bind(this.move_towards_center, this);
 
       this.display_group_all = __bind(this.display_group_all, this);
@@ -30,11 +24,11 @@
 
       var max_amount;
       this.data = data;
-      this.width = 940;
+      this.width = 600;
       this.height = 400;
       this.tooltip = CustomTooltip("gates_tooltip", 240);
       this.center = {
-        x: this.width / 2,
+        x: 200,
         y: this.height /2
       };
       this.year_centers = {
@@ -50,9 +44,9 @@
           from_x: 200,
           to_x: 600
         },
-        "medium_low": {
-          from: 0.5,
-          to: 0.84,
+        "medium": {
+          from: 0.17,
+          to: 0.82,
           from_x: 0,
           to_x: 800
         },
@@ -81,16 +75,17 @@
       this.nodes = [];
       this.force = null;
       this.circles = null;
-      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium_low","medium_high","high","very_high"]).range(["#d84b2a","#EB6262","#F9CCCC","#C9F1B0", "#83C55A", "#7aa25c"]);
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium","high","very_high"]).range(["#D84B2A","#EE9586","#D8D8D8","#9CAF84", "#7AA25C"]);
       max_amount = d3.max(this.data, function(d) {
         return parseInt(d.total_amount);
       });
-      this.radius_scale = d3.scale.pow().exponent(0.5).domain([0, max_amount]).range([2, 85]);
+      this.radius_scale = d3.scale.pow().exponent(0.5).domain([0, max_amount]).range([2, 80]);
       this.create_nodes();
       this.create_vis();
     }
 
     BubbleChart.prototype.create_nodes = function() {
+    debugger; 
       var _this = this;
       this.data.forEach(function(d) {
         var node;
@@ -115,13 +110,15 @@
     };
 
     BubbleChart.prototype.create_vis = function() {
-      var that,
+      debugger;
+      var table_flag,that,
         _this = this;
       this.vis = d3.select("#vis").append("svg").attr("width", this.width).attr("height", this.height).attr("id", "svg_vis");
       this.circles = this.vis.selectAll("circle").data(this.nodes, function(d) {
         return d.id;
       });
       that = this;
+      table_flag = 0;
       this.circles.enter().append("circle").attr("r", 0).attr("fill", function(d) {
         return _this.fill_color(d.group);
       }).attr("stroke-width", 2).attr("stroke", function(d) {
@@ -129,11 +126,12 @@
       }).attr("id", function(d) {
         return "bubble_" + d.id;
       }).on("mouseover", function(d, i) {
+        //change mouse cursor to pointer
+        document.body.style.cursor = 'pointer';
         //show tooltip
-        that.show_details(d, i, this);
+        that.show_details(d, i, this,"bubble");
         //add table on mouseover when in field level
-        debugger;
-        <% unless @breadcrumbs[:field_id].nil? %>
+        <% unless @breadcrumbs[:field_id].nil? || table_flag = 0 %>
         $table =  $('#transfer_table');
         $table.find("tbody").empty();
           var path =  document.URL + '/get_transfers';
@@ -148,10 +146,29 @@
           $table.show();
         <% end %>
       }).on("mouseout", function(d, i) {
-        $table.hide();
-        return that.hide_details(d, i, this);
+        //change mouse cursor to auto
+        document.body.style.cursor = 'auto';
+      if (!(typeof $table === 'undefined') && table_flag == 0)
+         $table.hide();      
+      return that.hide_details(d, i, this);
       }).on("click", function (d) {
-        window.location = document.URL + <%=@path.to_s%> + d.section_id;
+        <% if @path != "/program/" %>
+          window.location = document.URL + <%=@path.to_s%> + d.section_id;
+        <% else %>
+          $table =  $('#transfer_table');
+        $table.find("tbody").empty();
+          var path =  document.URL + '/get_transfers';
+         $.get(path,{ section_id: <%= @breadcrumbs[:section_id] %>, field_id: <%= @breadcrumbs[:field_id] %> , program_id: d.section_id })
+          .done(function(data) {
+            $(data).each(function(idx, obj){
+              var row = "<tr><td>" + obj.pniya_id + "</td><td>" + obj.request_desc + "</td><td>" + obj.net +"</td></tr>";
+              $table.append(row);
+            });
+          })
+          .fail(function() { alert("error"); });
+          $table.show();
+          table_flag = 1; 
+        <% end %>
       });
       return this.circles.transition().duration(2000).attr("r", function(d) {
         return d.radius;
@@ -189,78 +206,63 @@
       };
     };
 
-    BubbleChart.prototype.display_by_year = function() {
-      var _this = this;
-      this.force.gravity(this.layout_gravity).charge(this.charge).friction(0.9).on("tick", function(e) {
-        return _this.circles.each(_this.move_towards_year(e.alpha)).attr("cx", function(d) {
-          return d.x;
-        }).attr("cy", function(d) {
-          return d.y;
-        });
-      });
-      this.force.start();
-      return this.display_years();
-    };
-
-    BubbleChart.prototype.move_towards_year = function(alpha) {
-      var _this = this;
-      return function(d) {
-        var target;
-        target = _this.year_centers[d.group];
-        d.x = d.x + (target.x - d.x) * (_this.damper + 0.02) * alpha * 1.1;
-        return d.y = d.y + (target.y - d.y) * (_this.damper + 0.02) * alpha * 1.1;
-      };
-    };
-
-    BubbleChart.prototype.display_years = function() {
-      var years, years_data, years_x,
-        _this = this;
-      years_x = {
-        "2008": 160,
-        "2009": this.width / 2,
-        "2010": this.width - 160
-      };
-      years_data = d3.keys(years_x);
-      years = this.vis.selectAll(".years").data(years_data);
-      return years.enter().append("text").attr("class", "years").attr("x", function(d) {
-        return years_x[d];
-      }).attr("y", 40).attr("text-anchor", "middle").text(function(d) {
-        return d;
-      });
-    };
-
     BubbleChart.prototype.hide_years = function() {
       var years;
       return years = this.vis.selectAll(".years").remove();
     };
 
-    BubbleChart.prototype.show_details = function(data, i, element) {
+    BubbleChart.prototype.show_details = function(data, i, element,source) {
       var content;
-      d3.select(element).attr("stroke", "black");
+      
+      if (source == "bubble")
+        d3.select(element).attr("stroke", "black");
+      else
+      {
+        d3.select(element).attr("fill", "yellow");
+        $("#gates_tooltip").remove();
+        this.tooltip = CustomTooltip("gates_tooltip", 240);
+      }
+
       content = "<span class=\"title\"> " + data.name + "</span><br/>";
       content += "<span class=\"budget_title\"> תקציב מקורי</span>";
       content += "<span class=\"percent_title\"> אחוז שינוי </span><br/>";
       content += "<span class=\"budget\">" + ValueDesignTooltip(data.value) + "</span>";
       content += "<span class=\"percent\">" + data.percent + "%</span><br/>";
 
-      //check sign of percent:
-      return this.tooltip.showTooltip(content, d3.event, data.percent > 0 );
+      //if source != "bubble" then there is no d3 event. we got here from bar chart.
+      if(source == "bubble")
+        return this.tooltip.showTooltip(content, d3.event, data.percent > 0 );
+      else 
+      {
+        datum = d3.select(element);
+        tx = datum.attr("cx");
+        ty = datum.attr("cy");
+        e = {pageX: tx, pageY: ty};
+        return this.tooltip.showTooltip(content, e, data.percent > 0 );
+      }
     };
 
     BubbleChart.prototype.hide_details = function(data, i, element) {
       var _this = this;
+      //this.tooltip = CustomTooltip("gates_tooltip", 240);
+      this.fill_color = d3.scale.ordinal().domain(["very_low", "low", "medium","high","very_high"]).range(["#D84B2A","#EE9586","#D8D8D8","#9CAF84", "#7AA25C"]);
       d3.select(element).attr("stroke", function(d) {
         return d3.rgb(_this.fill_color(d.group)).darker();
+      });
+
+      d3.select(element).attr("fill", function(d) {
+        return d3.rgb(_this.fill_color(d.group));
       });
       return this.tooltip.hideTooltip();
     };
 
     return BubbleChart;
 
-  })();
+  })(); //end of BubbleChart class
 
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
+//start of document.ready()
   $(function() {
     var chart, data_ex, render_vis,
       _this = this;
@@ -279,13 +281,126 @@
     root.toggle_view = function(view_type) {
       return root.display_year();
     };
-data_ex = <%= @json %>;
+    debugger;
+    data_ex = <%= @json %>;
     return render_vis(data_ex);
   });
 
-}).call(this);
+  google.load("visualization", "1", {packages:["corechart"]});
+  google.setOnLoadCallback(drawChart);
+  autocomplete();
+   $("#year").change(function() {
+    x = this.value;
+    $.ajax('/filter?year='+this.value, {
+      method: 'post',
+      }).success(function(){location.reload();});
+    });
+  
+  function drawChart() {
+    sections = <%= @json %>;
+    sections.sort(function(a, b){
+     return b.percent-a.percent
+    });
 
-function CustomTooltip(tooltipId, width) {
+    len = sections.length;
+    positive_counter = 0;
+    negative_counter = 0;
+    winners=[];
+    losers=[];
+    h = {};
+    h['percent']=0;
+    h['name']="";
+
+    for(i=0; i<len && positive_counter<5; i++) {
+      if (sections[i].percent>0) {
+        winners[i]=sections[i];
+        positive_counter++;
+      }
+    }
+    for(i=len-1; i>=0 && negative_counter<5; i--) {
+      if (sections[i].percent<0) {
+        losers[len-1-i]=sections[i];
+        negative_counter++;
+      }
+    }
+
+    for(i=1; i<=Math.abs(positive_counter-negative_counter); i++) {
+      if (positive_counter>negative_counter) {
+        losers[negative_counter+i-1] = h;
+      }
+      else {
+        winers[positive_counter+i-1] = h;
+      }
+    }
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Month'); // Implicit domain label col.
+    data.addColumn('number', 'תוספת'); // Implicit series 1 data col.
+    data.addColumn({type:'string', role:'tooltip'});
+    data.addColumn('number', 'קיצוץ');
+    data.addColumn({type:'string', role:'tooltip'});
+    //create bars for chart
+    bar_chart_size = Math.max(positive_counter,negative_counter)
+    debugger;
+    for (var i = 0; i < bar_chart_size; i++) {
+      data.addRows([[String(i+1),Math.round(winners[i].percent *100)/100,winners[i].section_name,Math.round(losers[i].percent * 100)/100,losers[i].section_name]]);
+    };
+
+    var options = {
+      colors: ['green', 'red', 'yellow'],
+      title: 'התוספות/קיצוצים המובילים',
+      vAxis: {title: 'דירוג',  titleTextStyle: {color: 'green'}},
+      hAxis: {title: 'אחוז תוספת/קיצוץ',  titleTextStyle: {color: 'green'}}
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+    chart.draw(data, options);
+    //chart.options.color=['red','green']
+    google.visualization.events.addListener(chart, 'onmouseover', function(e){
+      debugger;
+      //user is over a green column
+      if(e.column == 1)
+        d = winners[e.row];
+      //user is on a red column
+      else if(e.column == 3)
+        d = losers[e.row];
+
+      data = {name: d.section_name, value: d.value, percent: d.percent}
+      element = 'circle#bubble_' + d.id; 
+      BubbleChart.prototype.show_details(data,d.id,element,"barchart");
+    });
+    google.visualization.events.addListener(chart, 'onmouseout', function(e){
+      if(e.column == 1)
+        d = winners[e.row];
+      else if(e.column == 3)
+        d = losers[e.row];
+
+      element = 'circle#bubble_' + d.id; 
+      BubbleChart.prototype.hide_details(null,null,element);
+    });
+}
+
+function autocomplete() {
+    var availableNames = <%= @auto_complete %>;
+    $("#query").autocomplete({
+      source: availableNames
+    });
+
+    $("#query").on( "autocompleteselect", function( event, ui ) {
+        data = {name: ui.item.value, value: ui.item.budget, percent: ui.item.percent}
+        element = 'circle#bubble_' + ui.item.id; 
+        BubbleChart.prototype.show_details(data,ui.item.id,element,"barchart");
+        setTimeout(function(){
+          BubbleChart.prototype.hide_details(data,ui.item.id,element,"barchart");
+          x = $("#query").get(0);
+          x.value = "";
+        },1000);        
+    });
+}
+
+}).call(this); //end of BubbleChart creation 
+
+function CustomTooltip(tooltipId, width,source) {
     var tooltipId = tooltipId;
     $("body").append("<div class='tooltip' id='" + tooltipId + "'></div>");
 
@@ -360,4 +475,8 @@ function ValueDesignTooltip(Value) {
   return newValue
 }
 
+function comboChange()
+{
+  
+}
 </script>

@@ -14,6 +14,7 @@ class SectionController < ApplicationController
 					 }  
 		#the array to hold final bubble data
 		field_array = []
+		@auto_complete = []
 		#groups hash defines devision to colour groups
 		groups = [	{:name => "very_high", :upper => 10000, :lower => 0.15, :p_from => 0.833333333, :p_to => 1},
 					{:name => "high", :upper => 0.15, :lower => 0.05, :p_from => 0.666666667, :p_to => 0.833333333},
@@ -46,7 +47,7 @@ class SectionController < ApplicationController
 						          :section_name => field.field_name,
 						          :start_year => 2009
 						   		}
-						          
+						@auto_complete.push({:label => field.field_name, :value => field.field_name, :id => index_field, :budget => bubble[:value], :percent =>bubble[:percent]})          
 						field_array.push(bubble)
 						flag = true
 					end
@@ -56,6 +57,7 @@ class SectionController < ApplicationController
 		end
 		@json = field_array.to_json.html_safe 
 		@path = "/field/"
+		@auto_complete = @auto_complete.to_json.html_safe
 	end	
 
 

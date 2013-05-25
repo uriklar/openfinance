@@ -11,7 +11,22 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130203084812) do
+ActiveRecord::Schema.define(:version => 20130413085535) do
+
+  create_table "fields", :force => true do |t|
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "programs", :force => true do |t|
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "sections", :force => true do |t|
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "transfers", :force => true do |t|
     t.integer  "transfer_id"
@@ -25,8 +40,17 @@ ActiveRecord::Schema.define(:version => 20130203084812) do
     t.string   "program_name"
     t.string   "request_desc"
     t.decimal  "net"
-    t.datetime "created_at",   :null => false
-    t.datetime "updated_at",   :null => false
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+    t.string   "changeName"
+    t.integer  "requestTypeCode"
+    t.string   "requestTypeName"
+    t.decimal  "conditionalExpense"
+    t.decimal  "intendedIncome"
+    t.decimal  "permissiontoCommit"
+    t.integer  "maxHR"
+    t.date     "aprovalDate"
+    t.integer  "changeCode"
   end
 
 end

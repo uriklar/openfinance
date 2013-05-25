@@ -223,7 +223,7 @@ textarea {
 
 body {
   margin: 0;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Alef";
   font-size: 14px;
   line-height: 20px;
   color: #333333;
@@ -405,7 +405,7 @@ a:hover {
 
 .row-fluid [class*="span"] {
   display: block;
-  float: left;
+  float: right;
   width: 100%;
   min-height: 30px;
   margin-left: 2.127659574468085%;
@@ -631,8 +631,8 @@ a:hover {
 }
 
 .container-fluid {
-  padding-right: 20px;
-  padding-left: 20px;
+  padding-right: 36px;
+  padding-left: 36px;
   *zoom: 1;
 }
 
@@ -4295,6 +4295,7 @@ input[type="submit"].btn.btn-mini {
   *z-index: 2;
   margin-bottom: 20px;
   overflow: visible;
+  direction: rtl;
 }
 
 .navbar-inner {

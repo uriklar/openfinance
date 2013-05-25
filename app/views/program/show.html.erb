@@ -3,17 +3,15 @@
   <caption>טבלת כלל ההעברות בתכנית פעולה זו</caption>
    <thead>
     <tr>
-      <th>מספר פנייה</th>
-      <th>תיאור הבקשה</th>
-      <th>סכום נטו</th>
+      <th>שם</th>
+      <th>קוד</th>
     </tr>
    </thead>
    <tbody>
-   	<% @transfers.each do |transfer| %>
+    <% @json.each do |budget| %>
     <tr>
-      <td><%= transfer.pniya_id %></td>
-      <td><%= transfer.request_desc %></td>
-      <td><%= transfer.net %></td>
+      <td><%= budget["title"] %></td>
+      <td><%= budget["budget_id"] %></td>
     </tr>
     <% end %>
    </tbody>

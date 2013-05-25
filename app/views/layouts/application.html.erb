@@ -1,44 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Openfinance</title>
+  <title>פותחים את ועדת הכספים</title>
   <%= stylesheet_link_tag "application" %>
-  <%= javascript_include_tag "http://d3js.org/d3.v3.min.js" %>
   <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" %>
-  <%= javascript_include_tag "application" %>
+  <%= javascript_include_tag "http://d3js.org/d3.v3.min.js" %>
+  <%= javascript_include_tag "http://code.jquery.com/ui/1.10.2/jquery-ui.js" %>
+  <%= javascript_include_tag "https://www.google.com/jsapi" %>
+  <%= stylesheet_link_tag "http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" %>
+
+  <!--%= javascript_include_tag "application" %-->
   <%= csrf_meta_tags %>
 </head>
 <body>
 
-<div class="navbar">
-	<div class="navbar-inner">
-	<a class="brand" href="#">Title</a>
-	<ul class="nav">
-		<li class="active"><a href="#">Home</a></li>
-		<li><a href="#">About the Finance Committe</a></li>
-		<li><a href="#">Credits</a></li>
-	</ul>
-	</div>
+<div class = "head">
+  <div class="navbar">
+  	<div class="navbar-inner">
+  	<a class="brand" href="#">ועדת הכספים הפתוחה</a>
+  	<ul class="nav">
+  		<li><a href="#">על ועדת הכספים</a></li>
+  		<li><a href="#">צרו קשר</a></li>
+      <li><%= text_field_tag 'query', nil, :placeholder => 'חפש שם סעיף' %></li>
+      <li>
+        <select name="vbitratecontrol0" id="year" onchange="comboChange()">;
+          <option value="2011">2011</option>
+          <option value="2010">2010</option>
+          <option value="2009">2009</option>
+          <option value="2008">2008</option>
+          <option value="2007">2007</option>
+          <option value="2006">2006</option>
+          <option value="2005">2005</option>
+      </select>
+      </li>
+  	</ul>
+  	</div>
+  </div>
+
+  <ul class="breadcrumb" align="right">
+    <li><a href="/">התקציב</a> <span class="divider">/</span></li>
+    <% unless @breadcrumbs[:section_id].nil? %>
+    	<li><%= link_to @breadcrumbs[:section_name], section_path(@breadcrumbs[:section_id]) %>
+    	<span class="divider">/</span></li>
+    	<% unless @breadcrumbs[:field_id].nil? %>
+    		<li><%= link_to @breadcrumbs[:field_name], section_field_path(@breadcrumbs[:section_id],@breadcrumbs[:field_id]) %>
+    		<span class="divider">/</span></li>
+    		<% unless @breadcrumbs[:program_id].nil? %>
+    			<li><%= link_to @breadcrumbs[:program_name], section_field_program_path(@breadcrumbs[:section_id],@breadcrumbs[:field_id],@breadcrumbs[:program_id]) %>
+    			<span class="divider">/</span></li>
+    		<% end %>
+    	<% end %>
+    <% end %>
+  </ul>
+</div>
+
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span8" id="right">
+      <div class="row-fluid">
+        <div class="span4">
+           <div class = "well well-large">
+          <%= image_tag 'legend.png' %>
+        </div>
+        </div>
+        <div class="span7">
+          <h1 class="bubble_title">תקציב המדינה</h1>
+          <%= yield %>
+      </div>
+    </div>
+    </div>
+    <div class="span3" id="left">
+      <div id="chart_div"></div>
+  </div>
+  </div>
 </div>
 
 
-<ul class="breadcrumb" align="right">
-  <li><a href="/">Home</a> <span class="divider">/</span></li>
-  <% unless @breadcrumbs[:section_id].nil? %>
-  	<li><%= link_to @breadcrumbs[:section_name], section_path(@breadcrumbs[:section_id]) %>
-  	<span class="divider">/</span></li>
-  	<% unless @breadcrumbs[:field_id].nil? %>
-  		<li><%= link_to @breadcrumbs[:field_name], section_field_path(@breadcrumbs[:section_id],@breadcrumbs[:field_id]) %>
-  		<span class="divider">/</span></li>
-  		<% unless @breadcrumbs[:program_id].nil? %>
-  			<li><%= link_to @breadcrumbs[:program_name], section_field_program_path(@breadcrumbs[:section_id],@breadcrumbs[:field_id],@breadcrumbs[:program_id]) %>
-  			<span class="divider">/</span></li>
-  		<% end %>
-  	<% end %>
-  <% end %>
-</ul>
-
-	<%= yield %>
+<div id="wrapper">
+<!--div id="footer_container_1">
+    <div id="footer_1">תחתית האתר</div>
+</div-->
+</div>
 
 </body>
 </html>
