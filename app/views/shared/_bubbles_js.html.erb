@@ -85,7 +85,6 @@
     }
 
     BubbleChart.prototype.create_nodes = function() {
-    debugger; 
       var _this = this;
       this.data.forEach(function(d) {
         var node;
@@ -110,7 +109,6 @@
     };
 
     BubbleChart.prototype.create_vis = function() {
-      debugger;
       var table_flag,that,
         _this = this;
       this.vis = d3.select("#vis").append("svg").attr("width", this.width).attr("height", this.height).attr("id", "svg_vis");
@@ -329,7 +327,7 @@
         losers[negative_counter+i-1] = h;
       }
       else {
-        winers[positive_counter+i-1] = h;
+        winners[positive_counter+i-1] = h;
       }
     }
 
@@ -341,7 +339,6 @@
     data.addColumn({type:'string', role:'tooltip'});
     //create bars for chart
     bar_chart_size = Math.max(positive_counter,negative_counter)
-    debugger;
     for (var i = 0; i < bar_chart_size; i++) {
       data.addRows([[String(i+1),Math.round(winners[i].percent *100)/100,winners[i].section_name,Math.round(losers[i].percent * 100)/100,losers[i].section_name]]);
     };
@@ -357,7 +354,6 @@
     chart.draw(data, options);
     //chart.options.color=['red','green']
     google.visualization.events.addListener(chart, 'onmouseover', function(e){
-      debugger;
       //user is over a green column
       if(e.column == 1)
         d = winners[e.row];

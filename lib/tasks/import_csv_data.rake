@@ -4,7 +4,7 @@ require 'csv'
   task :load_csv_data  => :environment do
    
     Transfer.delete_all
-    CSV.foreach("transfers_2005_to_2011_testing.csv" , :col_sep => ",", :quote_char => "\x00") do |row|
+    CSV.foreach("openfinance_db.csv" , :col_sep => ",", :quote_char => "\x00") do |row|
       Transfer.create(
       :transfer_id => row[21],
       :pniya_id => row[14],
